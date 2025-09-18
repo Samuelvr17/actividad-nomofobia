@@ -619,6 +619,15 @@ function App() {
         </div>
       </motion.section>
 
+      {/* video */}
+        <video
+          className="w-full max-w-4xl mx-auto rounded-2xl shadow-xl mb-16"
+          controls
+          >
+          <source src="/videos/nomofobia-compressed.mp4" type="video/mp4" /> 
+          Tu navegador no soporta el video.
+        </video>
+
       {/* Footer */}
       <motion.footer 
         className="bg-gray-900 text-white py-12 px-6"
