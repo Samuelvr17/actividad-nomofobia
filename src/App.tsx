@@ -620,13 +620,18 @@ function App() {
       </motion.section>
 
       {/* video */}
-        <video
-          className="w-full max-w-4xl mx-auto rounded-2xl shadow-xl mb-16"
-          controls
-          >
-          <source src="/videos/nomofobia-compressed.mp4" type="video/mp4" /> 
-          Tu navegador no soporta el video.
-        </video>
+      <div className="w-full max-w-4xl mx-auto mb-16">
+        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+          <iframe
+            className="absolute top-0 left-0 w-full h-full rounded-2xl shadow-xl"
+            src="https://www.youtube.com/embed/C8ULmYmPJ0Q"
+            title="Video Nomofobia"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+      </div>
 
       {/* Footer */}
       <motion.footer 
