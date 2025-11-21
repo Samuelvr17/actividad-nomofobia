@@ -19,6 +19,11 @@ import {
   Target,
   CheckCircle2,
   BarChart3,
+  Timer,
+  Play,
+  Pause,
+  RotateCcw,
+  Trophy,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -30,22 +35,62 @@ function App() {
   const [selectedSituations, setSelectedSituations] = useState<string[]>([]);
   const [selectedReactions, setSelectedReactions] = useState<string[]>([]);
 
+  // Phone-Free Timer states
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [bestTime, setBestTime] = useState(() => {
+    const saved = localStorage.getItem('phoneFreeTimerBest');
+    return saved ? parseInt(saved) : 0;
+  });
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-    setIsMobileMenuOpen(false); // Cerrar menú móvil al navegar
+    setIsMobileMenuOpen(false);
   };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Detectar sección activa y mostrar botón scroll to top
+  // Timer functionality
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        setTimerSeconds((prev) => prev + 1);
+      }, 1000);
+    } else if (interval) {
+      clearInterval(interval);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isTimerRunning]);
+
+  const startTimer = () => setIsTimerRunning(true);
+  const pauseTimer = () => setIsTimerRunning(false);
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    if (timerSeconds > bestTime) {
+      setBestTime(timerSeconds);
+      localStorage.setItem('phoneFreeTimerBest', timerSeconds.toString());
+    }
+    setTimerSeconds(0);
+  };
+
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['inicio', 'definicion', 'sintomas', 'causas', 'tips', 'experiencia'];
+      const sections = ['inicio', 'definicion', 'sintomas', 'causas', 'tips', 'desafio', 'experiencia'];
       const scrollPosition = window.scrollY + 120;
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       const progress = scrollHeight > 0 ? (window.scrollY / scrollHeight) * 100 : 0;
@@ -76,6 +121,7 @@ function App() {
     { id: 'sintomas', label: 'Síntomas', icon: AlertTriangle },
     { id: 'causas', label: 'Causas', icon: Brain },
     { id: 'tips', label: 'Tips', icon: Shield },
+    { id: 'desafio', label: 'Desafío', icon: Timer },
     { id: 'experiencia', label: 'Experiencia', icon: User },
   ];
 
@@ -775,6 +821,153 @@ function App() {
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-emerald-900/80 to-transparent p-6 text-white">
                 <p className="text-sm font-medium uppercase tracking-[0.3em] text-white/70">Balance cotidiano</p>
                 <p className="mt-2 text-lg font-semibold">Crear límites intencionales favorece la calma y el bienestar.</p>
+              </div>
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Phone-Free Timer Challenge */}
+        <motion.section
+          id="desafio"
+          className="px-4 sm:px-6 py-20"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              className="text-center mb-12 space-y-4"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-2 text-sm font-semibold text-white shadow-soft">
+                <Timer className="h-4 w-4" />
+                Desafío interactivo
+              </div>
+              <h2 className="text-4xl font-bold text-slate-900 leading-tight">Desafío sin Teléfono</h2>
+              <p className="text-xl text-slate-600 leading-relaxed">
+                ¿Cuánto tiempo puedes estar sin revisar tu dispositivo?
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50/80 to-fuchsia-50/80 p-8 sm:p-12 shadow-strong"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-200/30 to-fuchsia-200/30 rounded-full blur-3xl" />
+              <div className="relative z-10 space-y-8">
+                <div className="text-center space-y-4">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-soft">
+                    <Timer className="h-10 w-10" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-violet-600">Tiempo actual</p>
+                    <motion.p
+                      className="text-5xl sm:text-6xl font-black text-slate-900 font-mono"
+                      key={timerSeconds}
+                      initial={{ scale: 1.1 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {formatTime(timerSeconds)}
+                    </motion.p>
+                  </div>
+                </div>
+
+                <div className="flex justify-center gap-4">
+                  {!isTimerRunning ? (
+                    <motion.button
+                      onClick={startTimer}
+                      className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-lg font-semibold text-white shadow-strong transition-all hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Play className="h-5 w-5" />
+                      Iniciar Desafío
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      onClick={pauseTimer}
+                      className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 text-lg font-semibold text-white shadow-strong transition-all hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Pause className="h-5 w-5" />
+                      Pausar
+                    </motion.button>
+                  )}
+                  {timerSeconds > 0 && (
+                    <motion.button
+                      onClick={resetTimer}
+                      className="inline-flex items-center gap-2 rounded-full border-2 border-slate-300 bg-white/80 px-6 py-4 text-lg font-semibold text-slate-700 shadow-soft transition-all hover:bg-white hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <RotateCcw className="h-5 w-5" />
+                      Reiniciar
+                    </motion.button>
+                  )}
+                </div>
+
+                {bestTime > 0 && (
+                  <motion.div
+                    className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 p-6 shadow-soft"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <Trophy className="h-8 w-8 text-amber-600" />
+                        <div>
+                          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Mejor tiempo</p>
+                          <p className="text-3xl font-black text-amber-900 font-mono">{formatTime(bestTime)}</p>
+                        </div>
+                      </div>
+                      {timerSeconds > bestTime && isTimerRunning && (
+                        <motion.div
+                          className="rounded-full bg-amber-500 px-4 py-2 text-sm font-bold text-white shadow-soft"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        >
+                          ¡Nuevo récord!
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
+                <div className="rounded-2xl border border-violet-100 bg-white/60 p-6 shadow-soft">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-3">¿Cómo funciona?</h3>
+                  <ul className="space-y-2 text-sm text-slate-600">
+                    <li className="flex items-start gap-2">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-100 text-violet-600 text-xs font-bold">1</span>
+                      <span>Inicia el temporizador antes de dejar tu teléfono a un lado</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-100 text-violet-600 text-xs font-bold">2</span>
+                      <span>Realiza otras actividades sin revisar tu dispositivo</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-100 text-violet-600 text-xs font-bold">3</span>
+                      <span>Detén el cronómetro cuando necesites usar el teléfono nuevamente</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-100 text-violet-600 text-xs font-bold">4</span>
+                      <span>¡Intenta superar tu mejor tiempo cada día!</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </motion.div>
           </div>
